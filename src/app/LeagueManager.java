@@ -2,7 +2,7 @@ package app;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class LeagueManager {
     private final List<Team> teams = new ArrayList<Team>();
@@ -47,7 +47,7 @@ public class LeagueManager {
         return sb.toString();
     }
 
-    private final java.util.List<java.util.List<Team[]>> fixtures = new java.util.ArrayList<>();
+    private final List<List<Team[]>> fixtures = new ArrayList<>();
     private int currentRoundIndex = 0;
 
     public void generateFixtures() {
@@ -55,14 +55,14 @@ public class LeagueManager {
         int rounds = n - 1;
         int matchesPerRound = n / 2;
 
-        java.util.List<java.util.List<Team[]>> firstHalf = new java.util.ArrayList<>();
-        java.util.List<java.util.List<Team[]>> secondHalf = new java.util.ArrayList<>();
+        List<List<Team[]>> firstHalf = new ArrayList<>();
+        List<List<Team[]>> secondHalf = new ArrayList<>();
 
-        java.util.List<Team> tempTeams = new java.util.ArrayList<>(teams);
+        List<Team> tempTeams = new ArrayList<>(teams);
 
         for (int i = 0; i < rounds; i++) {
-            java.util.List<Team[]> roundFirstLeg = new java.util.ArrayList<>();
-            java.util.List<Team[]> roundSecondLeg = new java.util.ArrayList<>();
+            List<Team[]> roundFirstLeg = new ArrayList<>();
+            List<Team[]> roundSecondLeg = new ArrayList<>();
 
             for (int j = 0; j < matchesPerRound; j++) {
                 int homeIdx = (i + j) % (n - 1);
@@ -86,20 +86,22 @@ public class LeagueManager {
         fixtures.addAll(secondHalf);
     }
 
-    public void playNextRound(Engine engine) {
+    public String playNextRound(Engine engine) {
         if (currentRoundIndex >= fixtures.size()) {
-            return;
+            return null;
         }
 
-        java.util.List<Team[]> matchday = fixtures.get(currentRoundIndex);
-
+        List<Team[]> matchday = fixtures.get(currentRoundIndex);
+        StringBuilder sb = new StringBuilder("<html><body style='text-align: center;'><h3>Wyniki Kolejki " + (currentRoundIndex + 1) + "</h3>");
         for (Team[] match : matchday) {
             Team home = match[0];
             Team away = match[1];
-            engine.simulateMatch(home, away);
+            sb.append(engine.simulateMatch(home, away)).append("<br>");
         }
 
         currentRoundIndex++;
+        sb.append("</body></html>");
+        return sb.toString();
     }
 
 
@@ -107,7 +109,7 @@ public class LeagueManager {
 
     public void loadfile(String filePath) {
         try{
-            java.util.List<String> lines = java.nio.file.Files.readAllLines(java.nio.file.Paths.get(filePath));
+            List<String> lines = java.nio.file.Files.readAllLines(java.nio.file.Paths.get(filePath));
 
             for(String line : lines){
                 if (line.trim().isEmpty()) {

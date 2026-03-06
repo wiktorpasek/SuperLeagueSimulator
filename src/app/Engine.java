@@ -4,16 +4,15 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Engine {
 
-    public void simulateMatch(Team home, Team away) {
-
-        int homeGoals = calculateGoalsPro(home.getAtack_lvl() + 2, away.getDefense_lvl());
-        int awayGoals = calculateGoalsPro(away.getAtack_lvl(), home.getDefense_lvl());
-
-        int home_stats = home.getDefense_lvl() + home.getAtack_lvl();
-        int away_stats = away.getDefense_lvl() + away.getAtack_lvl();
-
-
-
+    public String simulateMatch(Team home, Team away) {
+        int matchHattack = home.getForm()*5 + home.getAtack_lvl();
+        int matchAattack = away.getForm()*5 + away.getAtack_lvl();
+        int matchHdefense = home.getForm()*2 + home.getDefense_lvl();
+        int matchAdefense = away.getForm()*2 + away.getDefense_lvl();
+        int homeGoals = calculateGoalsPro(matchHattack + 2,matchAdefense);
+        int awayGoals = calculateGoalsPro(matchAattack,matchHdefense);
+        int home_stats = matchHdefense + matchHattack;
+        int away_stats = matchAdefense + matchAattack;
         int bonus_chances = ThreadLocalRandom.current().nextInt(1, 101);
 
 
@@ -21,8 +20,7 @@ public class Engine {
             if (bonus_chances <= 10) {
                 awayGoals += 1;
             }
-        }
-        else if (home_stats < away_stats) {
+        }else if (home_stats < away_stats) {
             if (bonus_chances <= 10) {
                 homeGoals += 1;
                 if (homeGoals > awayGoals) {
@@ -35,14 +33,13 @@ public class Engine {
             System.out.println("Surprise!!! " + away.getName() + "... What a game!!");
         }
 
-        System.out.println(home.getName() + " " + homeGoals + " : " + awayGoals + " " + away.getName());
         home.M_Result(homeGoals, awayGoals);
         away.M_Result(awayGoals, homeGoals);
+        return home.getName() + " [" + home.getForm() + "] " + homeGoals + " : " + awayGoals + " [" + away.getForm() + "] " + away.getName();
     }
 
     private int calculateGoalsPro(int attack, int defense) {
         int diff = attack - defense;
-
         int chancePerGoal = 50 + (diff / 2);
 
         if (chancePerGoal < 3) chancePerGoal = 3;

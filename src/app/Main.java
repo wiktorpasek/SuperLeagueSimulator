@@ -10,8 +10,8 @@ public class Main {
         manager.loadfile("teams.csv");
         manager.generateFixtures();
 
-        javax.swing.UIManager.put("OptionPane.background", new java.awt.Color(30, 30, 30));
-        javax.swing.UIManager.put("Panel.background", new java.awt.Color(30, 30, 30));
+        UIManager.put("OptionPane.background", new java.awt.Color(30, 30, 30));
+        UIManager.put("Panel.background", new java.awt.Color(30, 30, 30));
 
         boolean isRunning = true;
         int currentMatchday = 1;
@@ -28,9 +28,9 @@ public class Main {
                     + "<p style='color: #cccccc;'>Wybierz akcję:</p>"
                     + "</body></html>";
 
-            javax.swing.JLabel menuLabel = new javax.swing.JLabel(newMenu);
-            menuLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-            javax.swing.UIManager.put("OptionPane.messageForeground", new java.awt.Color(255, 255, 255));
+            JLabel menuLabel = new javax.swing.JLabel(newMenu);
+            menuLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            UIManager.put("OptionPane.messageForeground", new java.awt.Color(255, 255, 255));
 
             String[] options = {
                     "Zobacz Tabelę",
@@ -65,8 +65,8 @@ public class Main {
                 if (currentMatchday > maxMatchdays) {
                     JOptionPane.showMessageDialog(null, "Sezon się już zakończył!", "Koniec", JOptionPane.WARNING_MESSAGE);
                 } else {
-                    manager.playNextRound(matchEngine);
-                    JOptionPane.showMessageDialog(null, "Kolejka nr " + currentMatchday + " rozegrana!", "Wynik", JOptionPane.PLAIN_MESSAGE);
+                    String wynikiKolejki = manager.playNextRound(matchEngine);
+                    JOptionPane.showMessageDialog(null, wynikiKolejki, "Wyniki Kolejki nr " + currentMatchday, JOptionPane.PLAIN_MESSAGE);
                     currentMatchday++;
 
                     if (currentMatchday > maxMatchdays) {
