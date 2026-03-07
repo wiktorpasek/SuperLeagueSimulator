@@ -35,7 +35,18 @@ public class Engine {
 
         home.M_Result(homeGoals, awayGoals);
         away.M_Result(awayGoals, homeGoals);
-        return home.getName() + " [" + home.getForm() + "] " + homeGoals + " : " + awayGoals + " [" + away.getForm() + "] " + away.getName();
+        // Logika kolorowania formy
+        String homeColor = home.getForm() > 0 ? "#27ae60" : (home.getForm() < 0 ? "#e74c3c" : "#95a5a6");
+        String awayColor = away.getForm() > 0 ? "#27ae60" : (away.getForm() < 0 ? "#e74c3c" : "#95a5a6");
+
+        String hForm = "<span style='color: " + homeColor + "; font-size: 10px;'>[" + (home.getForm() > 0 ? "+" : "") + home.getForm() + "]</span>";
+        String aForm = "<span style='color: " + awayColor + "; font-size: 10px;'>[" + (away.getForm() > 0 ? "+" : "") + away.getForm() + "]</span>";
+
+        return "<tr>" +
+                "<td style='padding: 4px; text-align: right; width: 40%;'>" + home.getName() + " " + hForm + "</td>" +
+                "<td style='padding: 4px; text-align: center; font-weight: bold; width: 20%; color: #f39c12;'>" + homeGoals + " : " + awayGoals + "</td>" +
+                "<td style='padding: 4px; text-align: left; width: 40%;'>" + aForm + " " + away.getName() + "</td>" +
+                "</tr>";
     }
 
     private int calculateGoalsPro(int attack, int defense) {

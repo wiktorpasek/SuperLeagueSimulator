@@ -1,7 +1,6 @@
 package app;
 
-import java.util.ArrayList;
-import java.util.Comparator;
+import java.io.*;
 import java.util.*;
 
 public class LeagueManager {
@@ -51,6 +50,7 @@ public class LeagueManager {
     private int currentRoundIndex = 0;
 
     public void generateFixtures() {
+        initHistoryFile();
         int n = teams.size();
         int rounds = n - 1;
         int matchesPerRound = n / 2;
@@ -92,16 +92,27 @@ public class LeagueManager {
         }
 
         List<Team[]> matchday = fixtures.get(currentRoundIndex);
-        StringBuilder sb = new StringBuilder("<html><body style='text-align: center;'><h3>Wyniki Kolejki " + (currentRoundIndex + 1) + "</h3>");
+
+        StringBuilder tableHtml = new StringBuilder();
+        tableHtml.append("<h2 style='text-align: center; color: #f39c12; margin-top: 0;'>Wyniki Kolejki ").append(currentRoundIndex + 1).append("</h2>");
+        tableHtml.append("<table style='width: 100%; border-collapse: collapse; margin: 0 auto; max-width: 400px;'>");
+
         for (Team[] match : matchday) {
             Team home = match[0];
             Team away = match[1];
-            sb.append(engine.simulateMatch(home, away)).append("<br>");
+            tableHtml.append(engine.simulateMatch(home, away));
         }
 
+        tableHtml.append("</table>");
+        tableHtml.append("<p style='text-align: center; font-size: 9px; color: #7f8c8d; margin-top: 15px;'>* Liczba w nawiasie oznacza aktualną formę zespołu</p>");
+
+        saveRoundToFile(tableHtml.toString());
+        StringBuilder guiHtml = new StringBuilder("<html><body style='background-color: #2b2b2b; color: #ffffff; font-family: sans-serif; padding: 10px; width: 350px;'>");
+        guiHtml.append(tableHtml);
+        guiHtml.append("</body></html>");
+
         currentRoundIndex++;
-        sb.append("</body></html>");
-        return sb.toString();
+        return guiHtml.toString();
     }
 
 
@@ -135,4 +146,24 @@ public class LeagueManager {
     public int getTeamsCount() {
         return teams.size();
     }
+
+    private void initHistoryFile() {
+        try (PrintWriter writer = new PrintWriter(new FileWriter("historia_sezonu.html", false))) {
+            writer.println("<html>"+"<head>"+"<meta charset=\"UTF-8\"><body style='background-color: #2b2b2b; color: #ffffff; font-family: sans-serif; padding: 20px;'>");
+            writer.println("<h1 style='text-align: center; color: #ff9800;'>HISTORIA SEZONU</h1>");
+        } catch (Exception e) {
+            System.out.println("Błąd tworzenia pliku: " + e.getMessage());
+        }
+    }
+
+    private void saveRoundToFile(String roundHtml) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter("historia_sezonu.html", true))) {
+            writer.println(roundHtml);
+            writer.println();
+            writer.println("<br><hr style='border: 1px solid #555; width: 50%;'><br>");
+        } catch (Exception e) {
+            System.out.println("Błąd zapisu kolejki: " + e.getMessage());
+        }
+    }
+
 }
