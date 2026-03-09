@@ -1,6 +1,7 @@
 package app;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.*;
 
 public class LeagueManager {
@@ -10,8 +11,8 @@ public class LeagueManager {
         StringBuilder sb = new StringBuilder();
 
         teams.sort(Comparator.comparingInt(Team::getPoints)
-                .thenComparingInt(Team::getGoal_difference)
-                .thenComparingInt(Team::getGoal_scored)
+                .thenComparingInt(Team::getGoalDifference)
+                .thenComparingInt(Team::getGoalScored)
                 .reversed());
 
         sb.append("<html><body style='background-color: #2b2b2b; color: #ffffff; font-family: sans-serif; padding: 15px; width: 250px;'>");
@@ -33,12 +34,12 @@ public class LeagueManager {
             sb.append("<tr ").append(rowStyle).append(">");
             sb.append("<td style='padding-top: 3px;'>").append(i + 1).append(".</td>");
             sb.append("<td>").append(team.getName()).append("</td>");
-            sb.append("<td>").append(team.getMatches_played()).append("</td>");
+            sb.append("<td>").append(team.getMatchesPlayed()).append("</td>");
             sb.append("<td>").append(team.getWins()).append("</td>");
             sb.append("<td>").append(team.getDraws()).append("</td>");
             sb.append("<td>").append(team.getLosses()).append("</td>");
             sb.append("<td><b>").append(team.getPoints()).append("</b></td>");
-            sb.append("<td>").append(team.getGoal_difference()).append("</td>");
+            sb.append("<td>").append(team.getGoalDifference()).append("</td>");
             sb.append("</tr>");
         }
 
@@ -107,12 +108,11 @@ public class LeagueManager {
         tableHtml.append("<p style='text-align: center; font-size: 9px; color: #7f8c8d; margin-top: 15px;'>* Liczba w nawiasie oznacza aktualną formę zespołu</p>");
 
         saveRoundToFile(tableHtml.toString());
-        StringBuilder guiHtml = new StringBuilder("<html><body style='background-color: #2b2b2b; color: #ffffff; font-family: sans-serif; padding: 10px; width: 350px;'>");
-        guiHtml.append(tableHtml);
-        guiHtml.append("</body></html>");
+        String guiHtml = "<html><body style='background-color: #2b2b2b; color: #ffffff; font-family: sans-serif; padding: 10px; width: 350px;'>" + tableHtml +
+                "</body></html>";
 
         currentRoundIndex++;
-        return guiHtml.toString();
+        return guiHtml;
     }
 
 
@@ -166,4 +166,64 @@ public class LeagueManager {
         }
     }
 
+    public void saveGame(int currentMatchday){
+        try (PrintWriter writer = new PrintWriter(new FileWriter("savegame.csv", false))) {
+            writer.println(currentMatchday);
+            teams.forEach((team) -> {
+                writer.println(team.getName() +","+team.getAtackLvl()+","+team.getDefenseLvl()+","+team.getPoints()
+                        +","+team.getMatchesPlayed()+","+team.getWins()+","+team.getDraws()+","+team.getLosses()+","+
+                        team.getGoalScored()+"," +team.getGoalConceded()+","+team.getForm());
+            });
+        } catch (Exception e) {
+            System.out.println("Błąd zapisu kolejki: " + e.getMessage());
+        }
+    }
+
+    public void setCurrentRoundIndex(int currentRoundIndex) {
+        this.currentRoundIndex = currentRoundIndex;
+    }
+
+    //DO NAUKI
+    public int loadGame() {
+        int savedMatchday = 1;
+
+        try {
+            List<String> lines = Files.readAllLines(java.nio.file.Paths.get("savegame.csv"));
+
+            if (lines.isEmpty()) {
+                System.out.println("Plik zapisu jest pusty!");
+                return savedMatchday;
+            }
+            savedMatchday = Integer.parseInt(lines.get(0));
+
+            teams.clear();
+
+            for (int i = 1; i < lines.size(); i++) {
+                String line = lines.get(i);
+                if (line.trim().isEmpty()) continue;
+
+                String[] parts = line.split(",");
+                String teamName = parts[0];
+                int attack = Integer.parseInt(parts[1]);
+                int defense = Integer.parseInt(parts[2]);
+                Team loadedTeam = new Team(teamName, attack, defense);
+                loadedTeam.setPoints(Integer.parseInt(parts[3]));
+                loadedTeam.setMatchesPlayed(Integer.parseInt(parts[4]));
+                loadedTeam.setWins(Integer.parseInt(parts[5]));
+                loadedTeam.setDraws(Integer.parseInt(parts[6]));
+                loadedTeam.setLosses(Integer.parseInt(parts[7]));
+                loadedTeam.setGoalScored(Integer.parseInt(parts[8]));
+                loadedTeam.setGoalConceded(Integer.parseInt(parts[9]));
+                loadedTeam.setForm(Integer.parseInt(parts[10]));
+
+                teams.add(loadedTeam);
+            }
+
+            System.out.println("Gra załadowana pomyślnie! Wracamy do kolejki nr: " + savedMatchday);
+
+        } catch (Exception e) {
+            System.out.println("Błąd wczytywania gry z pliku: " + e.getMessage());
+        }
+        return savedMatchday;
+    }
 }

@@ -2,32 +2,32 @@ package app;
 
 public class Team {
     private String name;
-    private int attack_lvl;
-    private int defense_lvl;
+    private int attackLvl;
+    private int defenseLvl;
     private int wins = 0;
     private int draws = 0;
     private int losses = 0;
     private int points;
-    private int goal_scored;
-    private int goal_conceded;
-    private int matches_played = 0;
+    private int goalScored;
+    private int goalConceded;
+    private int matchesPlayed = 0;
     private int form = 0;
 
 
-    public Team(String name, int Atack_lvl, int Defense_lvl) {
+    public Team(String name, int AtackLvl, int DefenseLvl) {
              this.name = name;
-             this.attack_lvl = Atack_lvl;
-             this.defense_lvl = Defense_lvl;
+             this.attackLvl = AtackLvl;
+             this.defenseLvl = DefenseLvl;
     }
 
     public void setForm(int form) {
         this.form = form;
     }
 
-    public void M_Result(int scored, int conceded) {
-        goal_scored += scored;
-        goal_conceded += conceded;
-        this.matches_played++;
+    public void MatchResult(int scored, int conceded) {
+        goalScored += scored;
+        goalConceded += conceded;
+        this.matchesPlayed++;
 
         if (scored > conceded) {
             this.points += 3;
@@ -51,9 +51,41 @@ public class Team {
         }
     }
 
-//Gettery
-    public int getGoal_difference() {
-        return this.goal_scored - this.goal_conceded;
+    //Settery
+    public void setName(String name) {
+        this.name = name;
+    }
+    public void setAttackLvl(int attackLvl) {
+        this.attackLvl = attackLvl;
+    }
+    public void setDefenseLvl(int defenseLvl) {
+        this.defenseLvl = defenseLvl;
+    }
+    public void setWins(int wins) {
+        this.wins = wins;
+    }
+    public void setDraws(int draws) {
+        this.draws = draws;
+    }
+    public void setLosses(int losses) {
+        this.losses = losses;
+    }
+    public void setPoints(int points) {
+        this.points = points;
+    }
+    public void setGoalScored(int goalScored) {
+        this.goalScored = goalScored;
+    }
+    public void setGoalConceded(int goalConceded) {
+        this.goalConceded = goalConceded;
+    }
+    public void setMatchesPlayed(int matchesPlayed) {
+        this.matchesPlayed = matchesPlayed;
+    }
+
+    //Gettery
+    public int getGoalDifference() {
+        return this.goalScored - this.goalConceded;
     }
     public String getName() {
         return name;
@@ -61,20 +93,20 @@ public class Team {
     public int getPoints() {
         return points;
     }
-    public int getGoal_conceded() {
-        return goal_conceded;
+    public int getGoalConceded() {
+        return goalConceded;
     }
-    public int getGoal_scored() {
-        return goal_scored;
+    public int getGoalScored() {
+        return goalScored;
     }
-    public int getAtack_lvl() {
-        return attack_lvl;
+    public int getAtackLvl() {
+        return attackLvl;
     }
-    public int getDefense_lvl() {
-        return defense_lvl;
+    public int getDefenseLvl() {
+        return defenseLvl;
     }
-    public int getMatches_played() {
-        return matches_played;
+    public int getMatchesPlayed() {
+        return matchesPlayed;
     }
     public int getWins() {
         return wins;

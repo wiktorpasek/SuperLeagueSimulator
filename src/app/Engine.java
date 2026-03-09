@@ -5,48 +5,54 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Engine {
 
     public String simulateMatch(Team home, Team away) {
-        int matchHattack = home.getForm()*5 + home.getAtack_lvl();
-        int matchAattack = away.getForm()*5 + away.getAtack_lvl();
-        int matchHdefense = home.getForm()*2 + home.getDefense_lvl();
-        int matchAdefense = away.getForm()*2 + away.getDefense_lvl();
+        String matchCommentary = "";
+        int matchHattack = home.getForm()*5 + home.getAtackLvl();
+        int matchAattack = away.getForm()*5 + away.getAtackLvl();
+        int matchHdefense = home.getForm()*2 + home.getDefenseLvl();
+        int matchAdefense = away.getForm()*2 + away.getDefenseLvl();
         int homeGoals = calculateGoalsPro(matchHattack + 2,matchAdefense);
         int awayGoals = calculateGoalsPro(matchAattack,matchHdefense);
-        int home_stats = matchHdefense + matchHattack;
-        int away_stats = matchAdefense + matchAattack;
-        int bonus_chances = ThreadLocalRandom.current().nextInt(1, 101);
+        int homeStats = matchHdefense + matchHattack;
+        int awayStats = matchAdefense + matchAattack;
+        int bonusChances = ThreadLocalRandom.current().nextInt(1, 101);
 
 
-        if (away_stats < home_stats) {
-            if (bonus_chances <= 10) {
+        if (awayStats < homeStats) {
+            if (bonusChances <= 10) {
                 awayGoals += 1;
             }
-        }else if (home_stats < away_stats) {
-            if (bonus_chances <= 10) {
+        }else if (homeStats < awayStats) {
+            if (bonusChances <= 10) {
                 homeGoals += 1;
                 if (homeGoals > awayGoals) {
-                    System.out.println("Carried by their fans, " + home.getName() + "... win a match");
-                }
+                    matchCommentary =  "Niesiony dopingiem kibiców " + home.getName() + " wyrywa zwycięstwo!";                        }
             }
         }
-
-        if (awayGoals > homeGoals) {
-            System.out.println("Surprise!!! " + away.getName() + "... What a game!!");
+        if (awayStats < homeStats && awayGoals > homeGoals) {
+                matchCommentary = "Sensacja na stadionie! " + away.getName() + " ucieraja nosa faworytom!";
         }
 
-        home.M_Result(homeGoals, awayGoals);
-        away.M_Result(awayGoals, homeGoals);
-        // Logika kolorowania formy
+        home.MatchResult(homeGoals, awayGoals);
+        away.MatchResult(awayGoals, homeGoals);
+
+
         String homeColor = home.getForm() > 0 ? "#27ae60" : (home.getForm() < 0 ? "#e74c3c" : "#95a5a6");
         String awayColor = away.getForm() > 0 ? "#27ae60" : (away.getForm() < 0 ? "#e74c3c" : "#95a5a6");
 
         String hForm = "<span style='color: " + homeColor + "; font-size: 10px;'>[" + (home.getForm() > 0 ? "+" : "") + home.getForm() + "]</span>";
         String aForm = "<span style='color: " + awayColor + "; font-size: 10px;'>[" + (away.getForm() > 0 ? "+" : "") + away.getForm() + "]</span>";
 
-        return "<tr>" +
+        String resultHtml;
+        resultHtml =  "<tr>" +
                 "<td style='padding: 4px; text-align: right; width: 40%;'>" + home.getName() + " " + hForm + "</td>" +
                 "<td style='padding: 4px; text-align: center; font-weight: bold; width: 20%; color: #f39c12;'>" + homeGoals + " : " + awayGoals + "</td>" +
                 "<td style='padding: 4px; text-align: left; width: 40%;'>" + aForm + " " + away.getName() + "</td>" +
                 "</tr>";
+        if (!matchCommentary.isEmpty()) {
+            resultHtml += "<tr style='background-color: #222;'><td colspan='3' style='text-align: center; color:" +
+                    "#bdc3c7; font-size: 10px; font-style: italic;'>"+ "\uD83C\uDFA4   " + matchCommentary +"</td></tr>";
+        }
+        return resultHtml;
     }
 
     private int calculateGoalsPro(int attack, int defense) {

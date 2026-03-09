@@ -2,23 +2,39 @@ package app;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.*;
 
 public class Main {
     public static void main(String[] args) {
-        LeagueManager manager = new LeagueManager();
-        Engine matchEngine = new Engine();
-
-        manager.loadfile("teams.csv");
-        manager.generateFixtures();
-
         UIManager.put("OptionPane.background", new Color(30, 30, 30));
         UIManager.put("Panel.background", new Color(30, 30, 30));
         UIManager.put("OptionPane.messageForeground", new Color(255,255,255));
-
-        boolean isRunning = true;
+        LeagueManager manager = new LeagueManager();
         int currentMatchday = 1;
-        int maxMatchdays = (manager.getTeamsCount() - 1) * 2;
+        Engine matchEngine = new Engine();
+        File saveFile = new File("savegame.csv");
+        if(saveFile.exists()){
 
+            String loadMessage = "<html><body style='color: #ffffff; text-align: center; font-family: sans-serif; padding: 10px;'>"
+                    + "<h3 style='color: #ff9800; margin-top: 0;'>Wykryto plik zapisu!</h3>"
+                    + "<p style='color: #cccccc;'>Znaleziono zapisany stan ligi z poprzedniej sesji.<br>Czy chcesz kontynuować ten sezon?</p>"
+                    + "</body></html>";
+
+            int response = JOptionPane.showConfirmDialog(null, loadMessage, "Menedżer Zapisów", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
+                if(response == JOptionPane.YES_OPTION){
+                    currentMatchday = manager.loadGame();
+                    manager.setCurrentRoundIndex(currentMatchday-1);
+                }else {
+                    manager.loadfile("teams.csv");
+                }
+        }else {
+            manager.loadfile("teams.csv");
+        }
+
+        manager.generateFixtures();
+        boolean isRunning = true;
+
+        int maxMatchdays = (manager.getTeamsCount() - 1) * 2;
         while (isRunning) {
             int displayMatchday = Math.min(currentMatchday, maxMatchdays);
             String statusText = (currentMatchday > maxMatchdays) ? "<br><span style='color: #e74c3c; font-size: 12px;'>[ SEZON ZAKOŃCZONY ]</span>" : "";
@@ -54,9 +70,8 @@ public class Main {
                     "Rozegraj Kolejkę",
                     "Symuluj do końca",
                     "Historia Wyników (Przeglądarka)",
-                    "Wyjdź z gry"
+                    "Zapisz i Wyjdź z gry"
             };
-
 
             for (int i = 0; i < buttonNames.length; i++) {
                 JButton btn = new JButton(buttonNames[i]);
@@ -65,7 +80,6 @@ public class Main {
                 btn.setFocusPainted(false);
                 btn.setFont(new Font("SansSerif", Font.BOLD, 14));
                 btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
                 final int index = i;
                 btn.addActionListener(e -> {
                     userChoice[0] = index;
@@ -79,8 +93,7 @@ public class Main {
 
             mainPanel.add(wrapperPanel);
 
-            JOptionPane.showOptionDialog(
-                    null,
+            JOptionPane.showOptionDialog(null,
                     mainPanel,
                     "Mini Football Manager",
                     JOptionPane.DEFAULT_OPTION,
@@ -92,8 +105,10 @@ public class Main {
 
             int choice = userChoice[0];
 
+
             if (choice == -1 || choice == 4) {
                 JOptionPane.showMessageDialog(null, "Do zobaczenia na murawie!");
+                manager.saveGame(currentMatchday);
                 isRunning = false;
                 continue;
             }
@@ -138,7 +153,7 @@ public class Main {
                     try {
                         if (Desktop.isDesktopSupported()) {
                             Desktop desktop = Desktop.getDesktop();
-                            java.io.File file = new java.io.File("historia_sezonu.html");
+                            File file = new File("historia_sezonu.html");
                             if (file.exists()) {
                                 desktop.browse(file.toURI());
                             } else {
