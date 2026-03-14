@@ -8,12 +8,12 @@ public class Main {
     public static void main(String[] args) {
         UIManager.put("OptionPane.background", new Color(30, 30, 30));
         UIManager.put("Panel.background", new Color(30, 30, 30));
-        UIManager.put("OptionPane.messageForeground", new Color(255,255,255));
+        UIManager.put("OptionPane.messageForeground", new Color(255, 255, 255));
         LeagueManager manager = new LeagueManager();
         int currentMatchday = 1;
         Engine matchEngine = new Engine();
         File saveFile = new File("savegame.csv");
-        if(saveFile.exists()){
+        if (saveFile.exists()) {
 
             String loadMessage = "<html><body style='color: #ffffff; text-align: center; font-family: sans-serif; padding: 10px;'>"
                     + "<h3 style='color: #ff9800; margin-top: 0;'>Wykryto plik zapisu!</h3>"
@@ -21,13 +21,13 @@ public class Main {
                     + "</body></html>";
 
             int response = JOptionPane.showConfirmDialog(null, loadMessage, "Menedżer Zapisów", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
-                if(response == JOptionPane.YES_OPTION){
-                    currentMatchday = manager.loadGame();
-                    manager.setCurrentRoundIndex(currentMatchday-1);
-                }else {
-                    manager.loadfile("teams.csv");
-                }
-        }else {
+            if (response == JOptionPane.YES_OPTION) {
+                currentMatchday = manager.loadGame();
+                manager.setCurrentRoundIndex(currentMatchday - 1);
+            } else {
+                manager.loadfile("teams.csv");
+            }
+        } else {
             manager.loadfile("teams.csv");
         }
 
@@ -68,6 +68,7 @@ public class Main {
             String[] buttonNames = {
                     "Zobacz Tabelę",
                     "Rozegraj Kolejkę",
+                    "Centrum Treningowe - Sklep",
                     "Symuluj do końca",
                     "Historia Wyników (Przeglądarka)",
                     "Zapisz i Wyjdź z gry"
@@ -106,7 +107,7 @@ public class Main {
             int choice = userChoice[0];
 
 
-            if (choice == -1 || choice == 4) {
+            if (choice == -1 || choice == 5) {
                 JOptionPane.showMessageDialog(null, "Do zobaczenia na murawie!");
                 manager.saveGame(currentMatchday);
                 isRunning = false;
@@ -116,9 +117,7 @@ public class Main {
             if (choice == 0) {
                 String as_string = manager.getTableAsString();
                 JOptionPane.showMessageDialog(null, as_string, "Tabela Ligowa", JOptionPane.PLAIN_MESSAGE);
-            }
-
-            else if (choice == 1) { // Rozegraj Kolejkę
+            } else if (choice == 1) { // Rozegraj Kolejkę
                 if (currentMatchday > maxMatchdays) {
                     JOptionPane.showMessageDialog(null, "Sezon się już zakończył!", "Koniec", JOptionPane.WARNING_MESSAGE);
                 } else {
@@ -130,41 +129,83 @@ public class Main {
                         JOptionPane.showMessageDialog(null, "Gratulacje! Zakończyłeś sezon.", "Koniec Sezonu", JOptionPane.INFORMATION_MESSAGE);
                     }
                 }
-            }
-
-            else if (choice == 2) { // Symuluj do końca
-                if (currentMatchday > maxMatchdays) {
-                    JOptionPane.showMessageDialog(null, "Sezon się już zakończył!", "Koniec", JOptionPane.WARNING_MESSAGE);
-                } else {
-                    int symulowaneKolejki = 0;
-                    while (currentMatchday <= maxMatchdays) {
-                        manager.playNextRound(matchEngine);
-                        currentMatchday++;
-                        symulowaneKolejki++;
-                    }
-                    JOptionPane.showMessageDialog(null, "BŁYSKAWICZNA SYMULACJA!\nRozegrano " + symulowaneKolejki + " kolejek.\nSezon zakończony!", "Koniec Sezonu", JOptionPane.INFORMATION_MESSAGE);
+            } else if (choice == 2) {
+                manager.getTeams();
+                String[] teamNames = new String[manager.getTeamsCount()];
+                for (int i = 0; i < manager.getTeamsCount(); i++) {
+                    teamNames[i] = manager.getTeams().get(i).getName();
                 }
-            }
+                Object selectedValue = JOptionPane.showInputDialog(null,
+                        "Wybierz drużynę do treningu:", "Centrum Treningowe",
+                        JOptionPane.QUESTION_MESSAGE, null, teamNames, teamNames[0]);
+                if (selectedValue != null) {
+                    String chosenTeamName = (String) selectedValue;
+                    for (Team team : manager.getTeams()) {
+                        if (team.getName().equals(chosenTeamName)) {
+                            int attackCost = 100000;
+                            int defenseCost = 100000;
+                            JOptionPane.showMessageDialog(null, "Wybrano: " + team.getName() + " | Budżet: " + team.getBudget());
+                            Object[] options = {"Trening Ataku (+1) - " + attackCost + "$", "Trening Obrony (+1) - " + defenseCost + "$", "Wyjście"};
+                            int action = JOptionPane.showOptionDialog(null,
+                                    "Budżet: " + team.getBudget() + "$\nWybierz trening dla " + team.getName() + ":",
+                                    "Centrum Treningowe",
+                                    JOptionPane.YES_NO_CANCEL_OPTION,
+                                    JOptionPane.QUESTION_MESSAGE,
+                                    null,
+                                    options,
+                                    options[2]);
+                            if (action == 0) {
+                                if (team.getBudget() >= attackCost) {
+                                    team.setBudget(team.getBudget() - attackCost);
+                                    team.setAttackLvl(team.getAtackLvl() + 1);
+                                    JOptionPane.showMessageDialog(null, "Transakcja udana! Parametry zespołu rosną. || Budżet wynosi: " + team.getBudget() + "$");
+                                } else {
+                                    JOptionPane.showMessageDialog(null, "Brak środków!");
+                                }
+                            }
 
-            else if (choice == 3) { // Historia Wyników (Przeglądarka)
-                if (currentMatchday == 1) {
-                    JOptionPane.showMessageDialog(null, "Historia jest pusta. Rozegraj najpierw kolejkę!", "Błąd", JOptionPane.WARNING_MESSAGE);
-                } else {
-                    try {
-                        if (Desktop.isDesktopSupported()) {
-                            Desktop desktop = Desktop.getDesktop();
-                            File file = new File("historia_sezonu.html");
-                            if (file.exists()) {
-                                desktop.browse(file.toURI());
-                            } else {
-                                JOptionPane.showMessageDialog(null, "Nie znaleziono pliku historii!", "Błąd", JOptionPane.WARNING_MESSAGE);
+                                if (action == 1) {
+                                    if (team.getBudget() >= defenseCost) {
+                                        team.setBudget(team.getBudget() - defenseCost);
+                                        team.setDefenseLvl(team.getDefenseLvl() + 1);
+                                    } else {
+                                        JOptionPane.showMessageDialog(null, "Brak środków!");
+                                    }
+                                }
                             }
                         }
-                    } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(null, "Nie udało się otworzyć przeglądarki: " + ex.getMessage(), "Błąd", JOptionPane.ERROR_MESSAGE);
+                    }
+                } else if (choice == 3) { // Symuluj do końca
+                    if (currentMatchday > maxMatchdays) {
+                        JOptionPane.showMessageDialog(null, "Sezon się już zakończył!", "Koniec", JOptionPane.WARNING_MESSAGE);
+                    } else {
+                        int symulowaneKolejki = 0;
+                        while (currentMatchday <= maxMatchdays) {
+                            manager.playNextRound(matchEngine);
+                            currentMatchday++;
+                            symulowaneKolejki++;
+                        }
+                        JOptionPane.showMessageDialog(null, "BŁYSKAWICZNA SYMULACJA!\nRozegrano " + symulowaneKolejki + " kolejek.\nSezon zakończony!", "Koniec Sezonu", JOptionPane.INFORMATION_MESSAGE);
+                    }
+                } else if (choice == 4) { // Historia Wyników (Przeglądarka)
+                    if (currentMatchday == 1) {
+                        JOptionPane.showMessageDialog(null, "Historia jest pusta. Rozegraj najpierw kolejkę!", "Błąd", JOptionPane.WARNING_MESSAGE);
+                    } else {
+                        try {
+                            if (Desktop.isDesktopSupported()) {
+                                Desktop desktop = Desktop.getDesktop();
+                                File file = new File("historia_sezonu.html");
+                                if (file.exists()) {
+                                    desktop.browse(file.toURI());
+                                } else {
+                                    JOptionPane.showMessageDialog(null, "Nie znaleziono pliku historii!", "Błąd", JOptionPane.WARNING_MESSAGE);
+                                }
+                            }
+                        } catch (Exception ex) {
+                            JOptionPane.showMessageDialog(null, "Nie udało się otworzyć przeglądarki: " + ex.getMessage(), "Błąd", JOptionPane.ERROR_MESSAGE);
+                        }
                     }
                 }
             }
         }
     }
-}

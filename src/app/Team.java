@@ -12,7 +12,7 @@ public class Team {
     private int goalConceded;
     private int matchesPlayed = 0;
     private int form = 0;
-
+    private int budget = 0;
 
     public Team(String name, int AtackLvl, int DefenseLvl) {
              this.name = name;
@@ -23,6 +23,9 @@ public class Team {
     public void setForm(int form) {
         this.form = form;
     }
+    public void setBudget(int budget) {
+        this.budget = budget;
+    }
 
     public void MatchResult(int scored, int conceded) {
         goalScored += scored;
@@ -30,12 +33,14 @@ public class Team {
         this.matchesPlayed++;
 
         if (scored > conceded) {
+            this.budget += 100000;
             this.points += 3;
             this.wins++;
             if (form < 3){
                 form++;
             }
         }else if (scored == conceded) {
+            this.budget += 30000;
             this.points += 1;
             this.draws++;
             if (form > 0){
@@ -120,7 +125,6 @@ public class Team {
     public int getForm() {
         return form;
     }
-
-
+    public int getBudget() {return budget;}
 }
 

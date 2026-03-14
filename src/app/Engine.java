@@ -8,8 +8,33 @@ public class Engine {
         String matchCommentary = "";
         int matchHattack = home.getForm()*5 + home.getAtackLvl();
         int matchAattack = away.getForm()*5 + away.getAtackLvl();
+        int redProcent = ThreadLocalRandom.current().nextInt(1, 101);
+        int injuryProcent = ThreadLocalRandom.current().nextInt(1, 101);
         int matchHdefense = home.getForm()*2 + home.getDefenseLvl();
         int matchAdefense = away.getForm()*2 + away.getDefenseLvl();
+
+        if(redProcent <= 5){
+            boolean coinFlip = ThreadLocalRandom.current().nextBoolean(); //true gospodarz // false gość
+            if (coinFlip){
+                matchHdefense -= 10;
+                matchCommentary += "Brutalny faul! " + home.getName() + " kończy mecz w dziesiątkę! ";
+            }else {
+                matchAdefense -= 10;
+                matchCommentary += "Brutalny faul! " + away.getName() + " kończy mecz w dziesiątkę! ";
+            }
+        }
+
+        if (injuryProcent <= 5){
+            boolean coinFlip = ThreadLocalRandom.current().nextBoolean();
+            if (coinFlip){
+                home.setForm(home.getForm() - 2);
+                matchCommentary += "Ależ pech... Kontuzja gracza " + home.getName();
+            }else {
+                away.setForm(away.getForm() - 2);
+                matchCommentary += "Ależ pech... Kontuzja gracza " + away.getName();
+            }
+        }
+
         int homeGoals = calculateGoalsPro(matchHattack + 2,matchAdefense);
         int awayGoals = calculateGoalsPro(matchAattack,matchHdefense);
         int homeStats = matchHdefense + matchHattack;
@@ -18,18 +43,18 @@ public class Engine {
 
 
         if (awayStats < homeStats) {
-            if (bonusChances <= 10) {
+            if (bonusChances <= 5) {
                 awayGoals += 1;
             }
         }else if (homeStats < awayStats) {
-            if (bonusChances <= 10) {
+            if (bonusChances <= 5) {
                 homeGoals += 1;
                 if (homeGoals > awayGoals) {
-                    matchCommentary =  "Niesiony dopingiem kibiców " + home.getName() + " wyrywa zwycięstwo!";                        }
+                    matchCommentary +=  "Niesiony dopingiem kibiców " + home.getName() + " wyrywa zwycięstwo! ";                        }
             }
         }
         if (awayStats < homeStats && awayGoals > homeGoals) {
-                matchCommentary = "Sensacja na stadionie! " + away.getName() + " ucieraja nosa faworytom!";
+                matchCommentary += "Sensacja na stadionie! " + away.getName() + " ucieraja nosa faworytom! ";
         }
 
         home.MatchResult(homeGoals, awayGoals);
@@ -77,4 +102,5 @@ public class Engine {
         }
         return goals;
     }
+
 }

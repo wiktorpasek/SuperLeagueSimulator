@@ -6,7 +6,7 @@ import java.util.*;
 
 public class LeagueManager {
     private final List<Team> teams = new ArrayList<Team>();
-
+    public List<Team> getTeams() { return teams; }
     public String getTableAsString() {
         StringBuilder sb = new StringBuilder();
 
@@ -172,7 +172,7 @@ public class LeagueManager {
             teams.forEach((team) -> {
                 writer.println(team.getName() +","+team.getAtackLvl()+","+team.getDefenseLvl()+","+team.getPoints()
                         +","+team.getMatchesPlayed()+","+team.getWins()+","+team.getDraws()+","+team.getLosses()+","+
-                        team.getGoalScored()+"," +team.getGoalConceded()+","+team.getForm());
+                        team.getGoalScored()+"," +team.getGoalConceded()+","+team.getForm()+"," +team.getBudget());
             });
         } catch (Exception e) {
             System.out.println("Błąd zapisu kolejki: " + e.getMessage());
@@ -215,6 +215,7 @@ public class LeagueManager {
                 loadedTeam.setGoalScored(Integer.parseInt(parts[8]));
                 loadedTeam.setGoalConceded(Integer.parseInt(parts[9]));
                 loadedTeam.setForm(Integer.parseInt(parts[10]));
+                loadedTeam.setBudget(Integer.parseInt(parts[11]));
 
                 teams.add(loadedTeam);
             }
