@@ -15,27 +15,50 @@ public class Main {
 		UIManager.put("OptionPane.background", new Color(30, 30, 30));
 		UIManager.put("Panel.background", new Color(30, 30, 30));
 		UIManager.put("OptionPane.messageForeground", new Color(255, 255, 255));
+		UIManager.put("Button.background", new Color(70, 70, 70));
+		UIManager.put("Button.foreground", Color.WHITE);
+		UIManager.put("Button.font", new Font("SansSerif", Font.BOLD, 14));
 
 		LeagueManager manager = new LeagueManager();
 		int currentMatchday = 1;
 		Engine matchEngine = new Engine();
 		File saveFile = new File("savegame.csv");
 
-		if (saveFile.exists()) {
-			String loadMessage = "<html><body style='color: #ffffff; text-align: center; font-family: sans-serif; padding: 10px;'>"
-					+ "<h3 style='color: #ff9800; margin-top: 0;'>Wykryto plik zapisu!</h3>"
-					+ "<p style='color: #cccccc;'>Znaleziono zapisany stan ligi z poprzedniej sesji.<br>Czy chcesz kontynuować ten sezon?</p>"
-					+ "</body></html>";
+		boolean inMainMenu = true;
+		while (inMainMenu) {
+			String menuMessage =
+					"<html><body style='color: #ffffff; text-align: center; font-family: sans-serif; padding: 10px;'>"
+							+ "<h1 style='color: #ff9800; margin-bottom: 5px;'>MINI FOOTBALL MANAGER</h1>"
+							+ "<p style='color: #cccccc;'>Wybierz tryb gry:</p>"
+							+ "</body></html>";
 
-			int response = JOptionPane.showConfirmDialog(null, loadMessage, "Menedżer Zapisów", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
-			if (response == JOptionPane.YES_OPTION) {
-				currentMatchday = manager.loadGame();
-				manager.setCurrentRoundIndex(currentMatchday - 1);
-			} else {
+			Object[] startOptions = {"Nowa Kariera", "Wczytaj Grę", "Wyjście"};
+
+			int startChoice = JOptionPane.showOptionDialog(null,
+					menuMessage,
+					"Menu Główne",
+					JOptionPane.DEFAULT_OPTION,
+					JOptionPane.PLAIN_MESSAGE,
+					null,
+					startOptions,
+					startOptions[0]
+			);
+
+			if (startChoice == 0) {
 				manager.loadfile("teams.csv");
+				currentMatchday = 1;
+				inMainMenu = false;
+			} else if (startChoice == 1) {
+				if (saveFile.exists()) {
+					currentMatchday = manager.loadGame();
+					manager.setCurrentRoundIndex(currentMatchday - 1);
+					inMainMenu = false;
+				} else {
+					JOptionPane.showMessageDialog(null, "Brak zapisu! Rozpocznij nową karierę.", "Błąd", JOptionPane.ERROR_MESSAGE);
+				}
+			} else if (startChoice == 2 || startChoice == -1) {
+				System.exit(0);
 			}
-		} else {
-			manager.loadfile("teams.csv");
 		}
 
 		manager.generateFixtures();
@@ -136,7 +159,7 @@ public class Main {
 						JOptionPane.showMessageDialog(null, "Gratulacje! Zakończyłeś sezon.", "Koniec Sezonu", JOptionPane.INFORMATION_MESSAGE);
 					}
 				}
-			} else if (choice == 2) { // Centrum Treningowe - Sklep
+			} else if (choice == 2) {
 				manager.getTeams();
 				String[] teamNames = new String[manager.getTeamsCount()];
 				for (int i = 0; i < manager.getTeamsCount(); i++) {
@@ -145,50 +168,56 @@ public class Main {
 				Object selectedValue = JOptionPane.showInputDialog(null,
 						"Wybierz drużynę do treningu:", "Centrum Treningowe",
 						JOptionPane.QUESTION_MESSAGE, null, teamNames, teamNames[0]);
+
 				if (selectedValue != null) {
 					String chosenTeamName = (String) selectedValue;
 					for (Team team : manager.getTeams()) {
 						if (team.getName().equals(chosenTeamName)) {
-							int attackCost = team.getAtackLvl() * 5000;
-							int defenseCost = team.getDefenseLvl() * 5000;
-							JOptionPane.showMessageDialog(null, "Wybrano: " + team.getName() + " | Budżet: " + team.getBudget());
-							Object[] options = {"Trening Ataku (+1) - " + attackCost + "$", "Trening Obrony (+1) - " + defenseCost + "$", "Wyjście"};
-							int action = JOptionPane.showOptionDialog(null,
-									"Budżet: " + team.getBudget() + "$\nWybierz trening dla " + team.getName() + ":",
-									"Centrum Treningowe",
-									JOptionPane.YES_NO_CANCEL_OPTION,
-									JOptionPane.QUESTION_MESSAGE,
-									null,
-									options,
-									options[2]);
 
-							if (action == 0) {
-								if (team.getAtackLvl() >= 99) {
-									JOptionPane.showMessageDialog(null, "Maksymalny poziom ataku (99) osiągnięty!");
-								} else if (team.getBudget() >= attackCost) {
-									team.setBudget(team.getBudget() - attackCost);
-									team.setAttackLvl(team.getAtackLvl() + 1);
-									JOptionPane.showMessageDialog(null, "Transakcja udana! Nowy atak: " + team.getAtackLvl() + " | Zostało: " + team.getBudget() + "$");
-								} else {
-									JOptionPane.showMessageDialog(null, "Brak środków! Potrzebujesz: " + attackCost + "$");
-								}
-							}
 
-							if (action == 1) {
-								if (team.getDefenseLvl() >= 99) {
-									JOptionPane.showMessageDialog(null, "Maksymalny poziom obrony (99) osiągnięty!");
-								} else if (team.getBudget() >= defenseCost) {
-									team.setBudget(team.getBudget() - defenseCost);
-									team.setDefenseLvl(team.getDefenseLvl() + 1);
-									JOptionPane.showMessageDialog(null, "Transakcja udana! Nowa obrona: " + team.getDefenseLvl() + " | Zostało: " + team.getBudget() + "$");
-								} else {
-									JOptionPane.showMessageDialog(null, "Brak środków! Potrzebujesz: " + defenseCost + "$");
+							boolean inShop = true;
+							while (inShop) {
+								int attackCost = team.getAtackLvl() * 5000;
+								int defenseCost = team.getDefenseLvl() * 5000;
+
+								Object[] options = {"Trening Ataku (+1) - " + attackCost + "$", "Trening Obrony (+1) - " + defenseCost + "$", "Wyjście"};
+								int action = JOptionPane.showOptionDialog(null,
+										"Budżet: " + team.getBudget() + "$\nWybierz trening dla " + team.getName() + ":",
+										"Centrum Treningowe",
+										JOptionPane.YES_NO_CANCEL_OPTION,
+										JOptionPane.QUESTION_MESSAGE,
+										null,
+										options,
+										options[2]);
+
+								if (action == 0) {
+									if (team.getAtackLvl() >= 99) {
+										JOptionPane.showMessageDialog(null, "Maksymalny poziom ataku (99) osiągnięty!");
+									} else if (team.getBudget() >= attackCost) {
+										team.setBudget(team.getBudget() - attackCost);
+										team.setAttackLvl(team.getAtackLvl() + 1);
+										JOptionPane.showMessageDialog(null, "Transakcja udana! Nowy atak: " + team.getAtackLvl() + " | Zostało: " + team.getBudget() + "$");
+									} else {
+										JOptionPane.showMessageDialog(null, "Brak środków! Potrzebujesz: " + attackCost + "$");
+									}
+								} else if (action == 1) {
+									if (team.getDefenseLvl() >= 99) {
+										JOptionPane.showMessageDialog(null, "Maksymalny poziom obrony (99) osiągnięty!");
+									} else if (team.getBudget() >= defenseCost) {
+										team.setBudget(team.getBudget() - defenseCost);
+										team.setDefenseLvl(team.getDefenseLvl() + 1);
+										JOptionPane.showMessageDialog(null, "Transakcja udana! Nowa obrona: " + team.getDefenseLvl() + " | Zostało: " + team.getBudget() + "$");
+									} else {
+										JOptionPane.showMessageDialog(null, "Brak środków! Potrzebujesz: " + defenseCost + "$");
+									}
+								} else if (action == 2 || action == -1) {
+									inShop = false; // Ewakuacja ze sklepu
 								}
 							}
 						}
 					}
 				}
-			} else if (choice == 3) { // Symuluj do końca
+			} else if (choice == 3) {
 				if (currentMatchday > maxMatchdays) {
 					JOptionPane.showMessageDialog(null, "Sezon się już zakończył!", "Koniec", JOptionPane.WARNING_MESSAGE);
 				} else {
@@ -200,7 +229,7 @@ public class Main {
 					}
 					JOptionPane.showMessageDialog(null, "BŁYSKAWICZNA SYMULACJA!\nRozegrano " + symulowaneKolejki + " kolejek.\nSezon zakończony!", "Koniec Sezonu", JOptionPane.INFORMATION_MESSAGE);
 				}
-			} else if (choice == 4) { // Historia Wyników (Przeglądarka)
+			} else if (choice == 4) {
 				if (currentMatchday == 1) {
 					JOptionPane.showMessageDialog(null, "Historia jest pusta. Rozegraj najpierw kolejkę!", "Błąd", JOptionPane.WARNING_MESSAGE);
 				} else {
